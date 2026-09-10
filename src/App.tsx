@@ -45,7 +45,7 @@ export default function App() {
     setResult(null); setError('')
   }
   function loadExample() {
-    setLead({ ...sampleLead }); setErrors({}); setError(''); setResult(null); setSimulateError(false)
+    setLead({ ...sampleLead, email: `alex.demo.${crypto.randomUUID().slice(0,8)}@example.com` }); setErrors({}); setError(''); setResult(null); setSimulateError(false)
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -76,7 +76,7 @@ export default function App() {
     </div></header>
     <main id="top" className="page-shell">
       <section className="intro"><div><div className="eyebrow intro-eyebrow"><span className="tiny-dot" /> INTERACTIVE PORTFOLIO DEMO</div><h1>Less sorting.<br className="mobile-break" /> More <span>opportunity.</span></h1><p>Capture an inquiry. Understand its potential. See how AI-powered<br className="desktop-break" /> qualification can move your next lead forward.</p></div><div className="intro-note"><FlaskConical size={18} /><div><strong>Try the workflow</strong><span>Sample data. Real interaction.</span></div><ArrowDown size={18} /></div></section>
-      <div className="demo-banner"><ShieldCheck size={19} /><p><strong>Connected portfolio demo.</strong> Use fictional details. Live submissions are saved in a private test database and trigger a manager notification. OpenAI awaits credits; rules provide the current assessment. No emails are sent.</p><span>SECRETS ON SERVER</span></div>
+      <div className="demo-banner"><ShieldCheck size={19} /><p><strong>Connected portfolio demo.</strong> Use fictional details. Live submissions are saved in a private test database and trigger a manager notification. OpenAI awaits credits; rules provide the current assessment. No emails are sent.</p><span>USE TEST DATA</span></div>
       <div className="workspace">
         <section className="form-panel" aria-labelledby="form-title">
           <div className="form-heading"><div><span className="eyebrow">01 / CAPTURE</span><h2 id="form-title">Meet your next lead.</h2></div><button type="button" className="sample-button" onClick={loadExample} disabled={loading}><WandSparkles size={16} />Use sample lead</button></div>

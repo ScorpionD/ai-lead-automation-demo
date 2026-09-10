@@ -21,6 +21,6 @@ export default function QualificationPanel({ result, loading }: { result: Qualif
       <p>{loading ? 'Preparing your assessment…' : 'No lead submitted yet'}</p>
       <div className="preview-fields"><span>Priority <b>—</b></span><span>Category <b>—</b></span><span>Lead score <b>— / 100</b></span></div>
     </div>}
-    <div className="result-footer"><span className="tiny-dot" /> {result?.mode==='openai'?'OpenAI assessment · human review recommended':result?.mode==='rules'?'Server rules · no AI call succeeded':'Local rules available if integrations are offline'}</div>
+    <div className="result-footer"><span className="tiny-dot" /> {result?.mode==='openai'?'OpenAI assessment · human review recommended':result?.mode==='rules'?'Rules assessment · human review recommended':'Local rules available if integrations are offline'}</div>
   </section>
 }
