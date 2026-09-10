@@ -22,7 +22,13 @@ export interface QualificationResult {
   summary: string
   recommendation: string
   signals: string[]
-  mode: 'demo'
+  mode: 'demo' | 'rules' | 'openai'
+  stored?: boolean
+  duplicate?: boolean
+  id?: string
+  notification?: 'sent' | 'failed' | 'unknown' | 'pending' | 'not_configured'
+  email?: 'not_configured'
+  deliveryNote?: string
 }
 export const emptyLead: LeadInput = { fullName: '', email: '', company: '', phone: '', budget: '', message: '' }
 export const sampleLead: LeadInput = {

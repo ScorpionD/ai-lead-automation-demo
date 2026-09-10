@@ -34,8 +34,8 @@ test('scoring is deterministic and independent of identity or phone', () => {
   assert.throws(() => qualifyLead(emptyLead))
 })
 test('service resolves, exposes a reproducible failure, and can retry', async () => {
-  const result = await leadService.submit(sampleLead)
+  const result = await leadService.submit(sampleLead, {localPreview:true})
   assert.equal(result.mode, 'demo')
-  await assert.rejects(leadService.submit(sampleLead, { simulateError: true }), /simulated failure/)
-  assert.equal((await leadService.submit(sampleLead)).score, result.score)
+  await assert.rejects(leadService.submit(sampleLead, { simulateError: true }), /Simulated error/)
+  assert.equal((await leadService.submit(sampleLead, {localPreview:true})).score, result.score)
 })

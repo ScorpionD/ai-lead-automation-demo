@@ -1,0 +1,11 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "ai-lead-automation-api",
+  "main": "index.ts",
+  "compatibility_date": "2026-09-10",
+  "workers_dev": false,
+  "preview_urls": false,
+  "vpc_services": [{"binding":"N8N","service_id":"01a08b3a-5cac-7320-a09b-c224460a527a"}],
+  "ratelimits": [{"name":"LEAD_RATE","namespace_id":"810245","simple":{"limit":5,"period":60}}],
+  "observability": {"enabled":false}
+}
