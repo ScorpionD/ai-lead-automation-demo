@@ -1,4 +1,4 @@
-import { isAssessment, validate } from '../infra/n8n/logic.mjs'
+import { isAssessment, validate, providerConfig } from '../infra/n8n/logic.mjs'
 interface Binding { fetch(request: Request): Promise<Response> }
 interface Limiter { limit(options: {key:string}): Promise<{success:boolean}> }
 export interface Env {
@@ -7,6 +7,10 @@ export interface Env {
   TURNSTILE_SECRET_KEY: string
   TURNSTILE_SITE_KEY: string
   LEAD_WEBHOOK_SECRET: string
+  AI_PROVIDER?: string
+  OPENROUTER_MODEL?: string
+  OPENAI_MODEL?: string
+  ALLOW_PAID_AI?: string
 }
 const origin = 'https://ai-lead-automation-demo.pages.dev'
 function reply(body: unknown, status=200) {
@@ -22,7 +26,7 @@ async function boundedBody(request: Request) {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path=new URL(request.url).pathname
-    if(path==='/api/config' && request.method==='GET') return reply({siteKey:env.TURNSTILE_SITE_KEY})
+    if(path==='/api/config' && request.method==='GET') return reply({siteKey:env.TURNSTILE_SITE_KEY,aiProvider:providerConfig(env).provider})
     if(path!=='/api/leads') return reply({error:'not_found'},404)
     if(request.method!=='POST') return reply({error:'method_not_allowed'},405)
     if(request.headers.get('Origin')!==origin) return reply({error:'origin_rejected'},403)
@@ -43,17 +47,18 @@ export default {
       if(!challenge.ok || proof.success!==true || proof.hostname!=='ai-lead-automation-demo.pages.dev' || proof.action!=='lead')return reply({error:'verification_failed'},403)
       const response=await env.N8N.fetch(new Request('http://172.30.240.10:5678/webhook/lead',{
         method:'POST',headers:{'Content-Type':'application/json','X-Lead-Secret':env.LEAD_WEBHOOK_SECRET},
-        body:JSON.stringify({lead:normalized.lead}),signal:AbortSignal.timeout(75000)
+        body:JSON.stringify({lead:normalized.lead,ai:providerConfig(env)}),signal:AbortSignal.timeout(75000)
       }))
       // Never relay arbitrary provider bodies, errors or n8n execution details to the browser.
       const data=await response.json() as Record<string,unknown>
-      if(!response.ok || !isAssessment(data) || data.stored!==true || !['rules','openai'].includes(String(data.mode))) {
+      if(!response.ok || !isAssessment(data) || data.stored!==true || !['rules','openai','openrouter'].includes(String(data.mode))) {
         const error=data.error==='daily_limit'?'daily_limit':data.error==='processing'?'processing':'workflow_unavailable'
         console.warn(JSON.stringify({event:error,requestId,status:response.status}))
         return reply({error},error==='daily_limit'?429:503)
       }
       console.info(JSON.stringify({event:'lead_processed',requestId,duplicate:data.duplicate===true,mode:data.mode}))
-      return reply({score:data.score,priority:data.priority,category:data.category,summary:data.summary,recommendation:data.recommendation,signals:data.signals,mode:data.mode,
+      return reply({score:data.score,priority:data.priority,category:data.category,summary:data.summary,next_action:data.next_action??data.recommendation,recommendation:data.next_action??data.recommendation,signals:data.signals,mode:data.mode,
+        model:typeof data.model==='string' && data.model.length<=160?data.model:undefined,
         stored:true,duplicate:data.duplicate===true,id:typeof data.id==='string'?data.id:undefined,
         notification:['sent','failed','unknown','not_configured','pending'].includes(String(data.notification))?data.notification:'unknown',email:'not_configured'})
     }catch{

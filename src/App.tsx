@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { ArrowDown, ArrowRight, Bell, Braces, Check, ChevronRight, CircleAlert, ClipboardList, Database, FlaskConical, GitBranch, Github, Layers3, LoaderCircle, Mail, ShieldCheck, Sparkles, WandSparkles, Zap } from 'lucide-react'
 import QualificationPanel from './components/QualificationPanel'
@@ -19,7 +19,7 @@ const technologies = [
   { name: 'React', note: 'Frontend · live', icon: Braces },
   { name: 'API/Webhooks', note: 'Cloudflare · protected endpoint', icon: GitBranch },
   { name: 'n8n', note: 'Orchestration · live', icon: Zap },
-  { name: 'OpenAI', note: 'Adapter ready · awaiting credits', icon: Sparkles },
+  { name: 'OpenRouter / OpenAI', note: 'Configurable AI provider', icon: Sparkles },
   { name: 'CRM', note: 'Test lead pipeline · Supabase', icon: Layers3 },
   { name: 'PostgreSQL', note: 'Storage + deduplication · live', icon: Database },
 ]
@@ -36,6 +36,14 @@ export default function App() {
   const [turnstileToken, setTurnstileToken] = useState('')
   const [verificationError, setVerificationError] = useState('')
   const [verificationReset, setVerificationReset] = useState(0)
+  const [aiProvider,setAiProvider]=useState<'rules'|'openrouter'|'openai'>('rules')
+  useEffect(()=>{
+    const controller=new AbortController()
+    fetch('/api/config',{signal:controller.signal}).then(r=>r.json()).then(config=>{
+      if(['rules','openrouter','openai'].includes(config.aiProvider))setAiProvider(config.aiProvider)
+    }).catch(()=>{})
+    return ()=>controller.abort()
+  },[])
   const formRef = useRef<HTMLFormElement>(null)
   const pending = useRef(false)
 
@@ -76,7 +84,7 @@ export default function App() {
     </div></header>
     <main id="top" className="page-shell">
       <section className="intro"><div><div className="eyebrow intro-eyebrow"><span className="tiny-dot" /> INTERACTIVE PORTFOLIO DEMO</div><h1>Less sorting.<br className="mobile-break" /> More <span>opportunity.</span></h1><p>Capture an inquiry. Understand its potential. See how AI-powered<br className="desktop-break" /> qualification can move your next lead forward.</p></div><div className="intro-note"><FlaskConical size={18} /><div><strong>Try the workflow</strong><span>Sample data. Real interaction.</span></div><ArrowDown size={18} /></div></section>
-      <div className="demo-banner"><ShieldCheck size={19} /><p><strong>Connected portfolio demo.</strong> Use fictional details. Live submissions are saved in a private test database and trigger a manager notification. OpenAI awaits credits; rules provide the current assessment. No emails are sent.</p><span>USE TEST DATA</span></div>
+      <div className="demo-banner"><ShieldCheck size={19} /><p><strong>Connected portfolio demo.</strong> Use fictional details. Live submissions are saved in a private test database and trigger a manager notification. {aiProvider==='openrouter'?'OpenRouter provides free AI qualification, with rules as a fallback.':aiProvider==='openai'?'OpenAI provides qualification, with rules as a fallback.':'Rules provide qualification while the AI provider is disabled.'} No emails are sent.</p><span>USE TEST DATA</span></div>
       <div className="workspace">
         <section className="form-panel" aria-labelledby="form-title">
           <div className="form-heading"><div><span className="eyebrow">01 / CAPTURE</span><h2 id="form-title">Meet your next lead.</h2></div><button type="button" className="sample-button" onClick={loadExample} disabled={loading}><WandSparkles size={16} />Use sample lead</button></div>
@@ -96,7 +104,7 @@ export default function App() {
               {result && <div className="success-notice" role="status"><Check size={17} />{result.stored ? result.duplicate ? 'Existing lead found. No duplicate record or notification was created.' : 'Lead saved. Your assessment is ready.' : result.deliveryNote}</div>}
               <label className="mode-choice"><input type="checkbox" checked={localPreview} onChange={event=>{setLocalPreview(event.target.checked);setResult(null);setError('')}} />Local preview · no data sent</label>
               {!localPreview && <>
-                <label className="consent-choice"><input type="checkbox" checked={consent} onChange={event=>setConsent(event.target.checked)} />I am using test details and agree to send them to the demo database and manager. Project text may be sent to OpenAI when enabled.</label>
+                <label className="consent-choice"><input type="checkbox" checked={consent} onChange={event=>setConsent(event.target.checked)} />I am using test details and agree to send them to the demo database and manager. Project text may be sent to the configured AI provider (OpenRouter or OpenAI).</label>
                 <BotCheck reset={verificationReset} onToken={setTurnstileToken} onError={setVerificationError} />
                 {verificationError && <p className="verification-note" role="status">{verificationError}</p>}
               </>}
@@ -108,7 +116,7 @@ export default function App() {
         </section>
         <QualificationPanel result={result} loading={loading} />
       </div>
-      <section className="workflow-section" id="workflow" aria-labelledby="workflow-title"><div className="section-heading"><div><span className="eyebrow">THE BIG PICTURE</span><h2 id="workflow-title">One lead. A connected workflow.</h2></div><span className="outline-tag">Live + clearly marked fallbacks</span></div><ol className="workflow-track">{workflow.map((step, index) => <li key={step.title} className={index === 1 ? 'highlight-step' : ''}><div className="step-top"><span className="workflow-icon"><step.icon size={21} /></span><span className="step-number">0{index + 1}</span></div><h3>{step.title}</h3><p>{step.detail}</p><span className="step-status">{['Protected form','Rules fallback active','Supabase · live','Not configured','Telegram · connected'][index]}</span>{index < 4 && <ChevronRight className="connector" size={18} />}</li>)}</ol><p className="workflow-note">n8n validates, checks duplicates, qualifies and stores each live lead. Delivery status appears with the result. OpenAI is configured but disabled until credits are available; email needs a sender account.</p></section>
+      <section className="workflow-section" id="workflow" aria-labelledby="workflow-title"><div className="section-heading"><div><span className="eyebrow">THE BIG PICTURE</span><h2 id="workflow-title">One lead. A connected workflow.</h2></div><span className="outline-tag">Connected demo</span></div><ol className="workflow-track">{workflow.map((step, index) => <li key={step.title} className={index === 1 ? 'highlight-step' : ''}><div className="step-top"><span className="workflow-icon"><step.icon size={21} /></span><span className="step-number">0{index + 1}</span></div><h3>{step.title}</h3><p>{step.detail}</p><span className="step-status">{['Protected form',aiProvider==='openrouter'?'OpenRouter · free AI':aiProvider==='openai'?'OpenAI':'Rules active','Supabase · live','Not configured','Telegram · connected'][index]}</span>{index < 4 && <ChevronRight className="connector" size={18} />}</li>)}</ol><p className="workflow-note">n8n validates, checks duplicates, qualifies and stores each live lead. The result identifies the AI provider and model used, or clearly marks a rules fallback. Free AI capacity can vary. Email needs a sender account.</p></section>
       <section className="technology-section" id="technology" aria-labelledby="technology-title"><div className="section-heading"><div><span className="eyebrow">BUILT TO CONNECT</span><h2 id="technology-title">Technology behind the workflow.</h2></div></div><div className="technology-grid">{technologies.map(tech => <div className="technology" key={tech.name}><tech.icon size={24} /><div><h3>{tech.name}</h3><p>{tech.note}</p></div></div>)}</div></section>
     </main>
     <footer className="site-footer"><div><span className="footer-brand"><Zap size={16} />AI Lead Automation</span><span>A portfolio demo by ScorpionD</span><span>React + TypeScript + Vite</span></div></footer>

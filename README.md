@@ -12,11 +12,11 @@ A connected portfolio demo built with React, TypeScript and Vite.
 - Server validation and atomic PostgreSQL deduplication in a dedicated Supabase Free project.
 - Qualification with priority, category, score, summary and next steps.
 - Telegram manager notifications, with explicit delivery status.
-- OpenAI Responses adapter with structured output validation and rules fallback.
+- Live OpenRouter qualification using a free model, strict output validation and rules fallback. The OpenAI Responses adapter remains available as an explicit configuration choice.
 
-**OpenAI is currently disabled pending API credits.** Live submissions receive an assessment from server rules and are labelled accordingly. No successful OpenAI call is claimed. Email follow-up is not configured or sent. Supabase is the test lead store; HubSpot is not connected.
+**OpenRouter is enabled with `nex-agi/nex-n2.5-pro:free`.** Synthetic end-to-end checks confirmed actual LLM results in Supabase and Telegram with zero OpenRouter usage cost. Each result identifies its actual provider and model; an unavailable provider or invalid response produces a clearly labelled rules assessment. OpenAI remains disabled and no credits have been purchased. Email follow-up is not configured or sent. Supabase is the test lead store; HubSpot is not connected.
 
-Use fictional details. Live submissions persist in the private test database. The manager receives a reference, assessment and summary. If OpenAI is enabled, company, budget and project message are sent to OpenAI with `store: false`; email, phone and full name are omitted from that request. Local preview sends no lead data. The page also loads Google Fonts and, in live mode, Cloudflare Turnstile.
+Use fictional details. Live submissions persist in the private test database. The manager receives a reference, assessment, summary and next action. Company, budget and project message are sent to the configured AI provider; the separate email, phone and full-name fields are omitted. Avoid putting contact details in the message itself. OpenRouter requests use `data_collection: deny`; OpenAI requests use `store: false`. Local preview sends no lead data. The page also loads Google Fonts and, in live mode, Cloudflare Turnstile.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ flowchart LR
   Guard --> VPC[Workers VPC + encrypted Tunnel]
   VPC --> n8n[Private n8n webhook on existing VPS]
   n8n --> DB[(Supabase PostgreSQL)]
-  n8n --> AI[OpenAI Responses when enabled]
+  n8n --> AI[OpenRouter free model / optional OpenAI]
   n8n --> TG[Telegram manager]
   AI -. failure or disabled .-> Rules[Explicit rules fallback]
   Rules --> DB
@@ -79,13 +79,30 @@ Generate the secret-free import with:
 node infra/n8n/build-workflow.mjs
 ```
 
-Import `infra/n8n/workflow.json` into the separate n8n instance. Create an HTTP Header Auth credential named `Lead webhook environment secret`, header `X-Lead-Secret`, value expression `={{ $env.LEAD_WEBHOOK_SECRET }}`; select it on the webhook node and publish the workflow. Other HTTP nodes resolve provider secrets directly from the server environment. Environment access is enabled for these owner-controlled nodes; do not give untrusted users workflow-editing access.
+Import `infra/n8n/workflow.json` into the separate n8n instance. Create an HTTP Header Auth credential named `Lead webhook environment secret`, header `X-Lead-Secret`, value expression `={{ $env.LEAD_WEBHOOK_SECRET }}`; select it on the webhook node. Create another HTTP Header Auth credential named `OpenRouter lead qualification`, header `Authorization`, value `Bearer YOUR_OPENROUTER_KEY`; select it on `OpenRouter classification`, then publish. The deployed OpenRouter key is encrypted in the private n8n credential store, protected by `N8N_ENCRYPTION_KEY`; the export contains only a credential placeholder. An alternative installation can resolve the header from a private server `OPENROUTER_API_KEY` environment variable. Other integration nodes use the server environment. Environment access is enabled for these owner-controlled nodes; do not give untrusted users workflow-editing access.
+
+## AI provider configuration
+
+Set these **non-secret environment variables on the private Cloudflare Worker**, keeping `worker/wrangler.jsonc` in sync before deploying. The Worker supplies trusted provider metadata to the authenticated n8n webhook; values supplied by a public form submission are discarded.
+
+| Variable | Current value | Purpose |
+| --- | --- | --- |
+| `AI_PROVIDER` | `openrouter` | `openrouter`, `rules`, or explicitly enabled `openai` |
+| `OPENROUTER_MODEL` | `nex-agi/nex-n2.5-pro:free` | A tested free model; `openrouter/free` can select an available free model automatically |
+| `OPENAI_MODEL` | `gpt-4.1-mini` | Used only if OpenAI is explicitly enabled |
+| `ALLOW_PAID_AI` | `false` | OpenAI is rejected unless this is explicitly changed to `true` |
+
+The OpenRouter adapter accepts only `openrouter/free` or a vendor/model ID ending in `:free`. It also sends zero prompt, completion and request price ceilings, with no paid fallback model or plugins. Invalid configuration fails closed to rules. Free models have changing availability, latency and quotas; the fixed model was selected after real tests, not as an uptime guarantee. See [free routing](https://openrouter.ai/docs/guides/routing/routers/free-router), [provider price limits](https://openrouter.ai/docs/guides/routing/provider-selection), and [structured output support](https://openrouter.ai/docs/guides/features/structured-outputs).
+
+Both adapters request exactly `priority`, `category`, `score`, `summary`, and `next_action`. Server validation rejects missing/extra fields, invalid categories, score/priority contradictions, refusals, truncated responses and non-JSON output. The response and stored record include `mode` and the actual `model`. `recommendation` remains an alias of `next_action` for older clients; cached older records also remain readable.
+
+To disable LLM calls, deploy `AI_PROVIDER=rules`. Switching back to OpenAI later requires the owner's authorization for costs, a server-side `OPENAI_API_KEY`, `AI_PROVIDER=openai` and `ALLOW_PAID_AI=true`. The old `OPENAI_ENABLED` server flag is no longer used: the Worker configuration controls the provider. No OpenRouter failure automatically invokes OpenAI.
 
 ## Failure behavior and limits
 
 - The edge permits five requests per IP per minute per Cloudflare location. PostgreSQL separately enforces a global limit of 100 new records per UTC day.
 - Canonical complete input is hashed in PostgreSQL. Identical submissions return the saved result and do not send another notification. A changed message is a new inquiry. Simultaneous submissions use an atomic reservation and 90-second lease.
-- Database and OpenAI HTTP nodes have two bounded attempts and 12-second request timeouts. The workflow has a 75-second execution limit. OpenAI is disabled by default; provider/schema errors use labelled server rules.
+- Database and OpenAI HTTP nodes have two bounded attempts and 12-second request timeouts. OpenRouter has two attempts with a 20-second timeout each. The workflow has a 75-second execution limit. Provider/schema errors use labelled server rules, which are still saved and sent to Telegram.
 - The record and assessment are saved before Telegram. Telegram delivery failures leave that record available. Ambiguous notification timeouts are marked `unknown` and are **not blindly resent**, because the first message might already have arrived. Pending/unknown notifications require checking the manager inbox before manual recovery.
 - A browser/backend outage leaves the form intact and offers a local assessment with **delivery unconfirmed**. A retry with identical details is safe against duplicate records. Local output never asserts a database write or a successful AI call.
 - n8n does not retain execution payloads. Worker application logs contain event names, request IDs, status and assessment mode, not lead text or keys. Worker observability storage is off by default; use temporary logs for diagnosis without adding payloads.
@@ -95,9 +112,8 @@ The rules use budget, English service keywords, brief detail and timing keywords
 
 ## Remaining setup
 
-1. Add OpenAI API credits with the owner's approval, then set `OPENAI_ENABLED=true` on n8n and restart only this stack. The configured model is `gpt-4.1-mini`. Run one synthetic public-URL test and confirm the UI says OpenAI before advertising live AI classification.
-2. Email requires a verified sender, transport credentials and an explicit test recipient. No sender account or email integration is provisioned here.
-3. Before real customer use, add operational monitoring, tested backups, a retention policy and an appropriate account/access model. This is a portfolio demonstration with free-service limits, not a production SLA.
+1. Email requires a verified sender, transport credentials and an explicit test recipient. No sender account or email integration is provisioned here.
+2. Before real customer use, add operational monitoring, tested backups, a retention policy and an appropriate account/access model. This is a portfolio demonstration with free-service limits, not a production SLA.
 
 ## Structure
 

@@ -20,9 +20,11 @@ export interface QualificationResult {
   priority: 'High' | 'Medium' | 'Low'
   category: 'Sales automation' | 'CRM integration' | 'AI assistant' | 'General inquiry'
   summary: string
+  next_action: string
   recommendation: string
   signals: string[]
-  mode: 'demo' | 'rules' | 'openai'
+  mode: 'demo' | 'rules' | 'openai' | 'openrouter'
+  model?: string
   stored?: boolean
   duplicate?: boolean
   id?: string

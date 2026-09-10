@@ -24,7 +24,7 @@ export const leadService: LeadService = {
     if (response.status===403) throw new Error('Verification expired or failed. Wait for a fresh verification and submit again.')
     if (!response.ok) throw new Error('The server could not accept these details. Check the form and try again.')
     const data=await response.json()
-    if (!isAssessment(data) || data.stored!==true || !['rules','openai'].includes(data.mode)) throw new Error('The server returned an unexpected response. Delivery is unconfirmed; you can retry the same details.')
-    return data as QualificationResult
+    if (!isAssessment(data) || data.stored!==true || !['rules','openai','openrouter'].includes(data.mode)) throw new Error('The server returned an unexpected response. Delivery is unconfirmed; you can retry the same details.')
+    return {...data,next_action:data.next_action??data.recommendation} as QualificationResult
   },
 }

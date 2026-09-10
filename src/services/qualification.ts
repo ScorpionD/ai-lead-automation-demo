@@ -22,5 +22,6 @@ export function qualifyLead(input: LeadInput): QualificationResult {
     signals: [ `${budget.label} budget`, relevant ? 'Service match identified' : 'Scope needs clarification', detailed ? 'Detailed project brief' : 'Initial project brief', timeline ? 'Near-term timing mentioned' : 'Timeline to confirm' ],
     summary: `${lead.fullName} from ${lead.company} is exploring ${category.toLowerCase()} with an estimated budget of ${budget.label.toLowerCase()}. ${detailed ? 'The brief includes enough detail for an initial discovery conversation.' : 'More detail is needed to define the project scope.'} ${timeline ? 'The message mentions near-term timing; confirm the target date.' : 'A delivery timeline has not been confirmed.'}`,
     recommendation: priority === 'High' ? 'Schedule a discovery call and confirm scope, timeline, and budget.' : priority === 'Medium' ? 'Send a short discovery questionnaire to clarify requirements.' : 'Clarify the business need and budget before proposing a solution.',
+    next_action: priority === 'High' ? 'Schedule a discovery call and confirm scope, timeline, and budget.' : priority === 'Medium' ? 'Send a short discovery questionnaire to clarify requirements.' : 'Clarify the business need and budget before proposing a solution.',
   }
 }
