@@ -29,6 +29,7 @@ export default function App() {
   const [lead, setLead] = useState<LeadInput>({ ...emptyLead })
   const [errors, setErrors] = useState<LeadErrors>({})
   const [loading, setLoading] = useState(false)
+  const [elapsedSeconds, setElapsedSeconds] = useState<number | null>(null)
   const [result, setResult] = useState<QualificationResult | null>(null)
   const [error, setError] = useState('')
   const [simulateError, setSimulateError] = useState(false)
@@ -77,10 +78,11 @@ export default function App() {
       return
     }
     if (!localPreview && !simulateError && !consent) {setError('Confirm that you are using test details and agree to send them to the demo workflow.');return}
-    pending.current = true; setLoading(true)
+    pending.current = true; setLoading(true); setElapsedSeconds(null)
+    const started = performance.now()
     try { setResult(await leadService.submit(normalizeLead(lead), { simulateError, localPreview, turnstileToken })) }
     catch (failure) { setError(failure instanceof Error ? failure.message : 'Something went wrong. Please try again.') }
-    finally { pending.current = false; setLoading(false); setVerificationReset(n=>n+1) }
+    finally { setElapsedSeconds((performance.now() - started) / 1000); pending.current = false; setLoading(false); setVerificationReset(n=>n+1) }
   }
   function inputProps(field: keyof LeadInput) {
     return { id: field, name: field, value: lead[field], 'aria-invalid': !!errors[field], 'aria-describedby': errors[field] ? `${field}-error` : undefined, onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => update(field, event.target.value) }
@@ -126,7 +128,7 @@ export default function App() {
             {loading && <SubmissionProgress />}
           </form>
         </section>
-        <QualificationPanel result={result} loading={loading} headingRef={resultHeading} />
+        <QualificationPanel result={result} loading={loading} headingRef={resultHeading} elapsedSeconds={elapsedSeconds} />
       </div>
       <section className="workflow-section" id="workflow" aria-labelledby="workflow-title"><div className="section-heading"><div><span className="eyebrow">THE BIG PICTURE</span><h2 id="workflow-title">One lead. A connected workflow.</h2></div><span className="outline-tag">Connected demo</span></div><ol className="workflow-track">{workflow.map((step, index) => <li key={step.title} className={index === 1 ? 'highlight-step' : ''}><div className="step-top"><span className="workflow-icon"><step.icon size={21} /></span><span className="step-number">0{index + 1}</span></div><h3>{step.title}</h3><p>{step.detail}</p><span className="step-status">{['Protected form',aiProvider==='openrouter'?'OpenRouter · free AI':aiProvider==='openai'?'OpenAI':'Rules active','Supabase · live','Not configured','Telegram · connected'][index]}</span>{index < 4 && <ChevronRight className="connector" size={18} />}</li>)}</ol><p className="workflow-note">n8n validates, checks duplicates, qualifies and stores each live lead. The result identifies the AI provider and model used, or clearly marks a rules fallback. Free AI capacity can vary. Email needs a sender account.</p></section>
       <section className="technology-section" id="technology" aria-labelledby="technology-title"><div className="section-heading"><div><span className="eyebrow">BUILT TO CONNECT</span><h2 id="technology-title">Technology behind the workflow.</h2></div></div><div className="technology-grid">{technologies.map(tech => <div className="technology" key={tech.name}><tech.icon size={24} /><div><h3>{tech.name}</h3><p>{tech.note}</p></div></div>)}</div></section>

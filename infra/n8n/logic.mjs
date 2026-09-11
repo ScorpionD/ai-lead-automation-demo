@@ -1,4 +1,4 @@
-// Pure functions embedded into the n8n Code nodes by build-workflow.mjs.
+// Pure functions embedded into native n8n Edit Fields expressions by build-workflow.mjs.
 // Provider secrets are accessed only by HTTP Request node expressions.
 export function validate(body) {
   const source = body?.lead;
@@ -86,7 +86,7 @@ export function openrouterBody(lead, model='openrouter/free') {
     messages:[{role:'system',content:qualificationInstructions()},{role:'user',content:JSON.stringify({company:lead.company,budget:lead.budget,message:lead.message})}],
     response_format:{type:'json_schema',json_schema:{name:'lead_assessment',strict:true,schema:qualificationSchema()}},
     // Free model IDs + zero price ceilings; never fall through to a paid model or plugin.
-    provider:{require_parameters:true,data_collection:'deny',max_price:{prompt:0,completion:0,request:0}},
+    provider:{require_parameters:true,data_collection:'deny',sort:'latency',max_price:{prompt:0,completion:0,request:0}},
     reasoning:{effort:'none'}};
 }
 export function notificationStatus(response) {

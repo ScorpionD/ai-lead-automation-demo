@@ -7,7 +7,7 @@ A connected portfolio demo built with React, TypeScript and Vite.
 ## What is implemented
 
 - Responsive lead form with validation, loading, success/error states and a local preview option.
-- An immediate processing dialog with elapsed time and a longer-wait message. It can be hidden and reopened without cancelling the request; completion brings the result or error into view. The timer measures waiting time, not server-side stage progress.
+- An immediate processing dialog with elapsed time and a longer-wait message. It can be hidden and reopened without cancelling the request; completion brings the result or error into view. The result also shows the actual elapsed request time. These timers measure waiting time, not server-side stage progress.
 - Cloudflare Turnstile, same-origin backend, size limits and a per-IP request limit.
 - An isolated, self-hosted n8n workflow with an authenticated private webhook.
 - Server validation and atomic PostgreSQL deduplication in a dedicated Supabase Free project.
@@ -38,6 +38,8 @@ flowchart LR
 The Worker accepts only `/api/leads` and `/api/config`. It forwards a fixed path to n8n; it cannot proxy arbitrary URLs or expose the editor. Its public `workers.dev` and preview URLs are disabled. The Pages Function uses a service binding. No application DNS changes are required.
 
 n8n, its external task runner and Cloudflare Tunnel run in rootless Docker under a dedicated unprivileged account. The editor binds to server loopback and is accessed through an SSH management tunnel. Processing continues when the developer's PC is off. Existing application services are not part of this stack.
+
+The lead workflow uses native Edit Fields expressions for its small pure transformations, so a request does not wait for an idle external Code runner to start. Before this change, an isolated validation-only call after idle took 21.0 seconds; a repeat took 0.8 seconds. A separate workflow benchmark using native transforms completed fresh AI qualification, persistence and Telegram delivery in 5.4 seconds. These are measurements, not a response-time guarantee.
 
 Workers VPC is a beta currently available free on all Workers plans. Recheck its availability/pricing before expanding this deployment. Sources: [Workers VPC](https://developers.cloudflare.com/workers-vpc/get-started/), [n8n external runners](https://docs.n8n.io/hosting/configuration/task-runners/).
 
@@ -103,7 +105,7 @@ To disable LLM calls, deploy `AI_PROVIDER=rules`. Switching back to OpenAI later
 
 - The edge permits five requests per IP per minute per Cloudflare location. PostgreSQL separately enforces a global limit of 100 new records per UTC day.
 - Canonical complete input is hashed in PostgreSQL. Identical submissions return the saved result and do not send another notification. A changed message is a new inquiry. Simultaneous submissions use an atomic reservation and 90-second lease.
-- Database and OpenAI HTTP nodes have two bounded attempts and 12-second request timeouts. OpenRouter has two attempts with a 20-second timeout each. The workflow has a 75-second execution limit. Provider/schema errors use labelled server rules, which are still saved and sent to Telegram.
+- Database and OpenAI HTTP nodes have two bounded attempts and 12-second request timeouts. OpenRouter prefers low-latency endpoints within the same zero-price constraints, with two attempts of at most 5 seconds each and a 300 ms retry delay. A slow or invalid AI response uses labelled server rules, which are still saved and sent to Telegram. The workflow has a 75-second execution limit to cover downstream outages; other service delays can still extend the total request time.
 - The record and assessment are saved before Telegram. Telegram delivery failures leave that record available. Ambiguous notification timeouts are marked `unknown` and are **not blindly resent**, because the first message might already have arrived. Pending/unknown notifications require checking the manager inbox before manual recovery.
 - A browser/backend outage leaves the form intact and offers a local assessment with **delivery unconfirmed**. A retry with identical details is safe against duplicate records. Local output never asserts a database write or a successful AI call.
 - n8n does not retain execution payloads. Worker application logs contain event names, request IDs, status and assessment mode, not lead text or keys. Worker observability storage is off by default; use temporary logs for diagnosis without adding payloads.

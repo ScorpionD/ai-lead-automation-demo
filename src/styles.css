@@ -28,6 +28,7 @@
 .progress-hide{width:100%;min-height:44px;padding:10px 14px;margin-top:24px;border:1px solid #d6dfd8;border-radius:7px;background:#fff;color:#354f40;font-size:.875rem;font-weight:500}
 .progress-hide:hover{background:#f2f6ed}
 .progress-hide-note{text-align:center;margin-top:9px;color:#7b8780;font-size:.6875rem;line-height:1.5}
+.completion-time{margin-top:12px;color:#c3dda4;font-size:.8125rem;font-variant-numeric:tabular-nums}
 #result-title:focus,.error-notice:focus{outline:2px solid #91b16b;outline-offset:6px;border-radius:3px}
 @media(max-width:480px){.progress-dialog{padding:25px}.progress-dialog h2{font-size:1.45rem}.progress-message{font-size:.875rem}.progress-inline button{margin-left:27px}}
 .mode-choice,.consent-choice{display:flex;align-items:flex-start;gap:10px;font-size:.8125rem;line-height:1.6;margin-top:16px;color:#4b6162}.mode-choice input,.consent-choice input{width:17px;height:17px;flex:0 0 17px;margin:3px 0 0;accent-color:#294c40}.consent-choice{padding:12px;background:#f5f8f2;border:1px solid #dfe8d8;border-radius:7px}.bot-check{margin-top:14px;min-height:65px}.verification-note{font-size:.8125rem;line-height:1.6;color:#8d4c27;margin-top:8px}.delivery-status{margin-top:24px;padding-top:18px;border-top:1px solid #ffffff21;font-size:.8125rem;line-height:1.8;color:#d4dfda}.delivery-status strong{color:#f1f7f1}.lead-id{overflow-wrap:anywhere;font-size:.6875rem;opacity:.8;margin-top:7px}.demo-banner p{line-height:1.6}.success-notice{line-height:1.6}

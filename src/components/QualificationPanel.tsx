@@ -2,7 +2,7 @@ import type { CSSProperties, Ref } from 'react'
 import { ArrowUpRight, Check, CircleCheck, LoaderCircle, ScanLine, Sparkles } from 'lucide-react'
 import type { QualificationResult } from '../types/lead'
 
-export default function QualificationPanel({ result, loading, headingRef }: { result: QualificationResult | null; loading: boolean; headingRef?: Ref<HTMLHeadingElement> }) {
+export default function QualificationPanel({ result, loading, headingRef, elapsedSeconds }: { result: QualificationResult | null; loading: boolean; headingRef?: Ref<HTMLHeadingElement>; elapsedSeconds?: number | null }) {
   const isAI=result?.mode==='openai'||result?.mode==='openrouter'
   const provider=result?.mode==='openrouter'?'OpenRouter':'OpenAI'
   return <section className={`result-panel ${result ? 'has-result' : ''}`} aria-labelledby="result-title" aria-busy={loading}>
@@ -12,6 +12,7 @@ export default function QualificationPanel({ result, loading, headingRef }: { re
       <p className="result-intro">{loading ? 'Checking the inquiry, qualification and delivery status.' : result ? isAI?`Assessment generated through ${provider}.`:result.mode==='rules'?'Saved in Supabase. AI was disabled, unavailable or returned an invalid response, so server rules provided this assessment.':result.deliveryNote||'Local rule-based assessment. Server delivery is not confirmed.' : 'Turn an inquiry into a useful sales brief. Submit a lead to see its score, priority, and recommended next step.'}</p>
     </div>
     {result && !loading ? <>
+      {elapsedSeconds != null && <p className="completion-time">Assessment ready in {elapsedSeconds.toFixed(1)} seconds</p>}
       <div className="score-row"><div className="score-dial" style={{ '--score': `${result.score}%` } as CSSProperties}><div><strong>{result.score}</strong><span>/ 100</span></div></div><div><span className="small-label">LEAD SCORE</span><div className={`priority priority-${result.priority.toLowerCase()}`}><CircleCheck size={15} /> {result.priority} priority</div><p className="category">{result.category}</p></div></div>
       <div className="ai-summary"><span className="small-label"><Sparkles size={14} /> {isAI?'AI SUMMARY':'RULE-BASED SUMMARY'}</span><p>{result.summary}</p></div>
       <div className="signals">{result.signals.map(signal => <span key={signal}><Check size={14} />{signal}</span>)}</div>
