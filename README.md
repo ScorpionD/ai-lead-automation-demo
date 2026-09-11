@@ -19,6 +19,16 @@ A connected portfolio demo built with React, TypeScript and Vite.
 
 Use fictional details. Live submissions persist in the private test database. The manager receives a reference, assessment, summary and next action. Company, budget and project message are sent to the configured AI provider; the separate email, phone and full-name fields are omitted. Avoid putting contact details in the message itself. OpenRouter requests use `data_collection: deny`; OpenAI requests use `store: false`. Local preview sends no lead data. The page also loads Google Fonts and, in live mode, Cloudflare Turnstile.
 
+## Portfolio presentation
+
+The first screen explains the business outcome in **What this demo solves** and offers a **Try with sample data** button. It fills fictional details without submitting; the visitor reviews the form and consents before a live request.
+
+The result dashboard emphasizes the lead score, priority, category, AI summary, recommended action, actual request time and separate Supabase/Telegram delivery tiles. Duplicate responses identify the existing record and original notification. Local preview and uncertain or failed delivery use distinct labels instead of claiming success. Provider/model and the lead reference remain available under **Delivery details**.
+
+**Production-ready features** lists the implemented safeguards and automation. **Built for customization** describes possible adaptations for HubSpot, Salesforce, Zoho, GoHighLevel, Slack, WhatsApp and existing websites/forms/CRMs. These are customization options, not connected integrations. Production operations still require the monitoring, backup and retention work described below.
+
+The performance highlight compares approximately **26s before optimization with a measured 3.6s public demo submission** after optimization, including qualification, storage and notification. It is a sample scenario achievement, not a latency guarantee or an average across all requests; the dashboard shows each visitor's actual wait. Model availability and network load affect subsequent runs.
+
 ## Architecture
 
 ```mermaid

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import { ArrowDown, ArrowRight, Bell, Braces, Check, ChevronRight, CircleAlert, ClipboardList, Database, FlaskConical, GitBranch, Github, Layers3, LoaderCircle, Mail, ShieldCheck, Sparkles, WandSparkles, Zap } from 'lucide-react'
+import { ArrowRight, Bell, Braces, Check, ChevronRight, CircleAlert, ClipboardList, Database, GitBranch, Github, Layers3, LoaderCircle, Mail, ShieldCheck, Sparkles, WandSparkles, Zap } from 'lucide-react'
 import QualificationPanel from './components/QualificationPanel'
 import BotCheck from './components/BotCheck'
 import SubmissionProgress from './components/SubmissionProgress'
+import { BusinessValue, CustomizationSection, PerformanceHighlight, ProductionFeatures } from './components/PortfolioSections'
 import { leadService } from './services/leadService'
 import { normalizeLead, validateLead } from './services/validation'
 import { budgets, emptyLead, sampleLead } from './types/lead'
@@ -67,6 +68,10 @@ export default function App() {
   function loadExample() {
     setLead({ ...sampleLead, email: `alex.demo.${crypto.randomUUID().slice(0,8)}@example.com` }); setErrors({}); setError(''); setResult(null); setSimulateError(false)
   }
+  function tryDemo() {
+    loadExample()
+    formRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (pending.current) return
@@ -96,7 +101,7 @@ export default function App() {
       <nav aria-label="Main navigation"><a href="#workflow">Workflow</a><a href="#technology">Technology</a><a className="source-link" href="https://github.com/ScorpionD/ai-lead-automation-demo" target="_blank" rel="noreferrer"><Github size={17} /><span>View source</span><ArrowRight size={16} /></a></nav>
     </div></header>
     <main id="top" className="page-shell">
-      <section className="intro"><div><div className="eyebrow intro-eyebrow"><span className="tiny-dot" /> INTERACTIVE PORTFOLIO DEMO</div><h1>Less sorting.<br className="mobile-break" /> More <span>opportunity.</span></h1><p>Capture an inquiry. Understand its potential. See how AI-powered<br className="desktop-break" /> qualification can move your next lead forward.</p></div><div className="intro-note"><FlaskConical size={18} /><div><strong>Try the workflow</strong><span>Sample data. Real interaction.</span></div><ArrowDown size={18} /></div></section>
+      <section className="intro"><div className="intro-copy"><div className="eyebrow intro-eyebrow"><span className="tiny-dot" /> INTERACTIVE PORTFOLIO DEMO</div><h1>Less sorting.<br className="mobile-break" /> More <span>opportunity.</span></h1><BusinessValue onTryDemo={tryDemo} disabled={loading} /></div><PerformanceHighlight /></section>
       <div className="demo-banner"><ShieldCheck size={19} /><p><strong>Connected portfolio demo.</strong> Use fictional details. Live submissions are saved in a private test database and trigger a manager notification. {aiProvider==='openrouter'?'OpenRouter provides free AI qualification, with rules as a fallback.':aiProvider==='openai'?'OpenAI provides qualification, with rules as a fallback.':'Rules provide qualification while the AI provider is disabled.'} No emails are sent.</p><span>USE TEST DATA</span></div>
       <div className="workspace">
         <section className="form-panel" aria-labelledby="form-title">
@@ -130,7 +135,9 @@ export default function App() {
         </section>
         <QualificationPanel result={result} loading={loading} headingRef={resultHeading} elapsedSeconds={elapsedSeconds} />
       </div>
+      <ProductionFeatures />
       <section className="workflow-section" id="workflow" aria-labelledby="workflow-title"><div className="section-heading"><div><span className="eyebrow">THE BIG PICTURE</span><h2 id="workflow-title">One lead. A connected workflow.</h2></div><span className="outline-tag">Connected demo</span></div><ol className="workflow-track">{workflow.map((step, index) => <li key={step.title} className={index === 1 ? 'highlight-step' : ''}><div className="step-top"><span className="workflow-icon"><step.icon size={21} /></span><span className="step-number">0{index + 1}</span></div><h3>{step.title}</h3><p>{step.detail}</p><span className="step-status">{['Protected form',aiProvider==='openrouter'?'OpenRouter · free AI':aiProvider==='openai'?'OpenAI':'Rules active','Supabase · live','Not configured','Telegram · connected'][index]}</span>{index < 4 && <ChevronRight className="connector" size={18} />}</li>)}</ol><p className="workflow-note">n8n validates, checks duplicates, qualifies and stores each live lead. The result identifies the AI provider and model used, or clearly marks a rules fallback. Free AI capacity can vary. Email needs a sender account.</p></section>
+      <CustomizationSection />
       <section className="technology-section" id="technology" aria-labelledby="technology-title"><div className="section-heading"><div><span className="eyebrow">BUILT TO CONNECT</span><h2 id="technology-title">Technology behind the workflow.</h2></div></div><div className="technology-grid">{technologies.map(tech => <div className="technology" key={tech.name}><tech.icon size={24} /><div><h3>{tech.name}</h3><p>{tech.note}</p></div></div>)}</div></section>
     </main>
     <footer className="site-footer"><div><span className="footer-brand"><Zap size={16} />AI Lead Automation</span><span>A portfolio demo by ScorpionD</span><span>React + TypeScript + Vite</span></div></footer>
