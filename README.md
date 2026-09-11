@@ -29,8 +29,6 @@ The result dashboard emphasizes the lead score, priority, category, AI summary, 
 
 **Production-ready features** lists the implemented safeguards and automation. **Built for customization** describes possible adaptations for HubSpot, Salesforce, Zoho, GoHighLevel, Slack, WhatsApp and existing websites/forms/CRMs. These are customization options, not connected integrations. Production operations still require the monitoring, backup and retention work described below.
 
-The performance highlight compares approximately **26s before optimization with a measured 3.6s public demo submission** after optimization, including qualification, storage and notification. It is a sample scenario achievement, not a latency guarantee or an average across all requests; the dashboard shows each visitor's actual wait. Model availability and network load affect subsequent runs.
-
 ## Architecture
 
 ```mermaid

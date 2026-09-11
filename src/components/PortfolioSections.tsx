@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Check, Database, GitBranch, Layers3, ShieldCheck, SlidersHorizontal, Sparkles, Zap } from 'lucide-react'
+import { ArrowRight, Bell, Check, Database, GitBranch, Layers3, ShieldCheck, SlidersHorizontal, Sparkles } from 'lucide-react'
 
 export function BusinessValue({ onTryDemo, disabled }: { onTryDemo: () => void; disabled: boolean }) {
   return <section className="business-value" aria-labelledby="business-title">
@@ -7,19 +7,6 @@ export function BusinessValue({ onTryDemo, disabled }: { onTryDemo: () => void; 
     <button type="button" className="business-cta" onClick={onTryDemo} disabled={disabled}>Try with sample data <ArrowRight size={17} /></button>
     <span className="business-cta-note">Explore the result in a few clicks.</span>
   </section>
-}
-
-export function PerformanceHighlight() {
-  return <aside className="performance-card" aria-labelledby="performance-title">
-    <span className="eyebrow"><Zap size={14} /> FASTER BY DESIGN</span>
-    <h2 id="performance-title">Optimized processing time</h2>
-    <div className="performance-values" aria-label="Optimized from approximately 26 seconds to approximately 3.6 seconds processing time">
-      <div><span>Before</span><strong>~26<small>s</small></strong></div>
-      <ArrowRight size={23} aria-hidden="true" />
-      <div className="performance-after"><span>After</span><strong>~3.6<small>s</small></strong></div>
-    </div>
-    <p>Sample scenario comparison. Optimized run: 3.6s. Actual times vary with model and network load.</p>
-  </aside>
 }
 
 const features = [

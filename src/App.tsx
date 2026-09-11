@@ -4,7 +4,7 @@ import { ArrowRight, Bell, Braces, Check, ChevronRight, CircleAlert, ClipboardLi
 import QualificationPanel from './components/QualificationPanel'
 import BotCheck from './components/BotCheck'
 import SubmissionProgress from './components/SubmissionProgress'
-import { BusinessValue, CustomizationSection, PerformanceHighlight, ProductionFeatures } from './components/PortfolioSections'
+import { BusinessValue, CustomizationSection, ProductionFeatures } from './components/PortfolioSections'
 import { leadService } from './services/leadService'
 import { normalizeLead, validateLead } from './services/validation'
 import { budgets, emptyLead, sampleLead } from './types/lead'
@@ -101,7 +101,7 @@ export default function App() {
       <nav aria-label="Main navigation"><a href="#workflow">Workflow</a><a href="#technology">Technology</a><a className="source-link" href="https://github.com/ScorpionD/ai-lead-automation-demo" target="_blank" rel="noreferrer"><Github size={17} /><span>View source</span><ArrowRight size={16} /></a></nav>
     </div></header>
     <main id="top" className="page-shell">
-      <section className="intro"><div className="intro-copy"><div className="eyebrow intro-eyebrow"><span className="tiny-dot" /> INTERACTIVE PORTFOLIO DEMO</div><h1>Less sorting.<br className="mobile-break" /> More <span>opportunity.</span></h1><BusinessValue onTryDemo={tryDemo} disabled={loading} /></div><PerformanceHighlight /></section>
+      <section className="intro"><div className="intro-copy"><div className="eyebrow intro-eyebrow"><span className="tiny-dot" /> INTERACTIVE PORTFOLIO DEMO</div><h1>Less sorting.<br className="mobile-break" /> More <span>opportunity.</span></h1><BusinessValue onTryDemo={tryDemo} disabled={loading} /></div></section>
       <div className="demo-banner"><ShieldCheck size={19} /><p><strong>Connected portfolio demo.</strong> Use fictional details. Live submissions are saved in a private test database and trigger a manager notification. {aiProvider==='openrouter'?'OpenRouter provides free AI qualification, with rules as a fallback.':aiProvider==='openai'?'OpenAI provides qualification, with rules as a fallback.':'Rules provide qualification while the AI provider is disabled.'} No emails are sent.</p><span>USE TEST DATA</span></div>
       <div className="workspace">
         <section className="form-panel" aria-labelledby="form-title">
