@@ -23,6 +23,8 @@ Use fictional details. Live submissions persist in the private test database. Th
 
 The first screen explains the business outcome in **What this demo solves** and offers a **Try with sample data** button. It fills fictional details without submitting; the visitor reviews the form and consents before a live request.
 
+The layout supports narrow phones as well as desktop. Turnstile switches to its supported compact widget when the form's available width is below 300px, retaining the same verification and backend protections.
+
 The result dashboard emphasizes the lead score, priority, category, AI summary, recommended action, actual request time and separate Supabase/Telegram delivery tiles. Duplicate responses identify the existing record and original notification. Local preview and uncertain or failed delivery use distinct labels instead of claiming success. Provider/model and the lead reference remain available under **Delivery details**.
 
 **Production-ready features** lists the implemented safeguards and automation. **Built for customization** describes possible adaptations for HubSpot, Salesforce, Zoho, GoHighLevel, Slack, WhatsApp and existing websites/forms/CRMs. These are customization options, not connected integrations. Production operations still require the monitoring, backup and retention work described below.

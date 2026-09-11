@@ -38,6 +38,8 @@
 .performance-card p { font-size: .75rem; line-height: 1.65; color: #647469; }
 
 .workspace { align-items: start; }
+.form-panel { min-width: 0; }
+.bot-check-compact { min-height: 140px; }
 .result-panel { min-height: 550px; }
 .panel-heading { flex-wrap: wrap; margin-bottom: 24px; }
 .provider-live { background: #30472f; border-color: #617945; color: #d3edb1; }
