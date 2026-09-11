@@ -1,14 +1,14 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, Ref } from 'react'
 import { ArrowUpRight, Check, CircleCheck, LoaderCircle, ScanLine, Sparkles } from 'lucide-react'
 import type { QualificationResult } from '../types/lead'
 
-export default function QualificationPanel({ result, loading }: { result: QualificationResult | null; loading: boolean }) {
+export default function QualificationPanel({ result, loading, headingRef }: { result: QualificationResult | null; loading: boolean; headingRef?: Ref<HTMLHeadingElement> }) {
   const isAI=result?.mode==='openai'||result?.mode==='openrouter'
   const provider=result?.mode==='openrouter'?'OpenRouter':'OpenAI'
   return <section className={`result-panel ${result ? 'has-result' : ''}`} aria-labelledby="result-title" aria-busy={loading}>
     <div className="panel-heading"><span className="eyebrow"><Sparkles size={15} /> QUALIFICATION</span><span className="dark-tag">{isAI?provider:result?.mode==='rules'?'Rules fallback':'Portfolio demo'}</span></div>
     <div role="status" aria-live="polite">
-      <h2 id="result-title">{loading ? 'Reading the signals…' : result ? 'A clearer next step.' : 'Good leads deserve a head start.'}</h2>
+      <h2 ref={headingRef} tabIndex={-1} id="result-title">{loading ? 'Reading the signals…' : result ? 'A clearer next step.' : 'Good leads deserve a head start.'}</h2>
       <p className="result-intro">{loading ? 'Checking the inquiry, qualification and delivery status.' : result ? isAI?`Assessment generated through ${provider}.`:result.mode==='rules'?'Saved in Supabase. AI was disabled, unavailable or returned an invalid response, so server rules provided this assessment.':result.deliveryNote||'Local rule-based assessment. Server delivery is not confirmed.' : 'Turn an inquiry into a useful sales brief. Submit a lead to see its score, priority, and recommended next step.'}</p>
     </div>
     {result && !loading ? <>

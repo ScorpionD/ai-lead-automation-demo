@@ -7,6 +7,7 @@ A connected portfolio demo built with React, TypeScript and Vite.
 ## What is implemented
 
 - Responsive lead form with validation, loading, success/error states and a local preview option.
+- An immediate processing dialog with elapsed time and a longer-wait message. It can be hidden and reopened without cancelling the request; completion brings the result or error into view. The timer measures waiting time, not server-side stage progress.
 - Cloudflare Turnstile, same-origin backend, size limits and a per-IP request limit.
 - An isolated, self-hosted n8n workflow with an authenticated private webhook.
 - Server validation and atomic PostgreSQL deduplication in a dedicated Supabase Free project.

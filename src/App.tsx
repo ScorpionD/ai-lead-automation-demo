@@ -3,6 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react'
 import { ArrowDown, ArrowRight, Bell, Braces, Check, ChevronRight, CircleAlert, ClipboardList, Database, FlaskConical, GitBranch, Github, Layers3, LoaderCircle, Mail, ShieldCheck, Sparkles, WandSparkles, Zap } from 'lucide-react'
 import QualificationPanel from './components/QualificationPanel'
 import BotCheck from './components/BotCheck'
+import SubmissionProgress from './components/SubmissionProgress'
 import { leadService } from './services/leadService'
 import { normalizeLead, validateLead } from './services/validation'
 import { budgets, emptyLead, sampleLead } from './types/lead'
@@ -45,7 +46,17 @@ export default function App() {
     return ()=>controller.abort()
   },[])
   const formRef = useRef<HTMLFormElement>(null)
+  const resultHeading = useRef<HTMLHeadingElement>(null)
+  const errorNotice = useRef<HTMLDivElement>(null)
   const pending = useRef(false)
+
+  useEffect(() => {
+    if (loading) return
+    const target = result ? resultHeading.current : error ? errorNotice.current : null
+    if (!target) return
+    target.focus({ preventScroll: true })
+    target.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }, [loading, result, error])
 
   function update(field: keyof LeadInput, value: string) {
     setLead(previous => ({ ...previous, [field]: value }))
@@ -100,7 +111,7 @@ export default function App() {
                 <div className="field full-width"><label htmlFor="message">Message <span>*</span></label><textarea {...inputProps('message')} required minLength={20} maxLength={2000} rows={4} placeholder="What would you like to automate? Tell us about your goals and timeline." /><div className="message-meta">{fieldError('message') || <span>At least 20 characters</span>}<span>{lead.message.length.toLocaleString()} / 2,000</span></div></div>
               </div>
               {Object.values(errors).some(Boolean) && <p className="validation-note" role="alert">Please check the highlighted fields before submitting.</p>}
-              {error && <div className="error-notice" role="alert"><CircleAlert size={19} /><p>{error}</p></div>}
+              {error && <div ref={errorNotice} tabIndex={-1} className="error-notice" role="alert"><CircleAlert size={19} /><p>{error}</p></div>}
               {result && <div className="success-notice" role="status"><Check size={17} />{result.stored ? result.duplicate ? 'Existing lead found. No duplicate record or notification was created.' : 'Lead saved. Your assessment is ready.' : result.deliveryNote}</div>}
               <label className="mode-choice"><input type="checkbox" checked={localPreview} onChange={event=>{setLocalPreview(event.target.checked);setResult(null);setError('')}} />Local preview · no data sent</label>
               {!localPreview && <>
@@ -112,9 +123,10 @@ export default function App() {
               <div className="form-footnote"><span><ShieldCheck size={14} /> {localPreview?'Local preview · nothing sent':'Test workflow · private storage'}</span><span>* Required fields</span></div>
               <details className="demo-controls"><summary>Demo controls</summary><label><input type="checkbox" checked={simulateError} onChange={event => { setSimulateError(event.target.checked); setError('') }} />Simulate a submission error</label></details>
             </fieldset>
+            {loading && <SubmissionProgress />}
           </form>
         </section>
-        <QualificationPanel result={result} loading={loading} />
+        <QualificationPanel result={result} loading={loading} headingRef={resultHeading} />
       </div>
       <section className="workflow-section" id="workflow" aria-labelledby="workflow-title"><div className="section-heading"><div><span className="eyebrow">THE BIG PICTURE</span><h2 id="workflow-title">One lead. A connected workflow.</h2></div><span className="outline-tag">Connected demo</span></div><ol className="workflow-track">{workflow.map((step, index) => <li key={step.title} className={index === 1 ? 'highlight-step' : ''}><div className="step-top"><span className="workflow-icon"><step.icon size={21} /></span><span className="step-number">0{index + 1}</span></div><h3>{step.title}</h3><p>{step.detail}</p><span className="step-status">{['Protected form',aiProvider==='openrouter'?'OpenRouter · free AI':aiProvider==='openai'?'OpenAI':'Rules active','Supabase · live','Not configured','Telegram · connected'][index]}</span>{index < 4 && <ChevronRight className="connector" size={18} />}</li>)}</ol><p className="workflow-note">n8n validates, checks duplicates, qualifies and stores each live lead. The result identifies the AI provider and model used, or clearly marks a rules fallback. Free AI capacity can vary. Email needs a sender account.</p></section>
       <section className="technology-section" id="technology" aria-labelledby="technology-title"><div className="section-heading"><div><span className="eyebrow">BUILT TO CONNECT</span><h2 id="technology-title">Technology behind the workflow.</h2></div></div><div className="technology-grid">{technologies.map(tech => <div className="technology" key={tech.name}><tech.icon size={24} /><div><h3>{tech.name}</h3><p>{tech.note}</p></div></div>)}</div></section>
